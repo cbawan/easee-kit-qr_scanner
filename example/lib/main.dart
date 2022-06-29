@@ -173,7 +173,10 @@ class _QRViewExampleState extends State<QRViewExample> {
         result = scanData;
       });
     });
-		controller.resumeCamera();
+		if (Platform.isAndroid)
+		{
+			controller.resumeCamera();
+		}
   }
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
