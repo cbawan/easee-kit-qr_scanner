@@ -6,6 +6,6 @@ import io.flutter.plugin.common.PluginRegistry
 
 object Shared {
     const val CAMERA_REQUEST_ID = 513469796
-    var activity: Activity? = null
+     var activity: Activity? = null
     var binding: ActivityPluginBinding? = null
 }

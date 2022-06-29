@@ -20,7 +20,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.platform.PlatformView
 
 
-class QRView(private val context: Context, messenger: BinaryMessenger, private val id: Int, private val params: HashMap<String, Any>) :
+class QRView(private val context: Context?, messenger: BinaryMessenger, private val id: Int, private val params: HashMap<String, Any>) :
         PlatformView, MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
 
     private var isTorchOn: Boolean = false
@@ -191,15 +191,27 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
         return initBarCodeView().apply {}!!
     }
 
-    private fun initBarCodeView(): CustomFramingRectBarcodeView? {
-        if (barcodeView == null) {
-            barcodeView =
-                CustomFramingRectBarcodeView(Shared.activity)
-            if (params["cameraFacing"] as Int == 1) {
-                barcodeView?.cameraSettings?.requestedCameraId = CameraInfo.CAMERA_FACING_FRONT
+    private fun initBarCodeView(): CustomFramingRectBarcodeView?
+    {
+        if (barcodeView == null)
+        {
+            barcodeView = CustomFramingRectBarcodeView(Shared.activity)
+            if (params["cameraFacing"] as Int == 1)
+            {
+                val settings = barcodeView?.cameraSettings
+                settings?.requestedCameraId = CameraInfo.CAMERA_FACING_FRONT
+                barcodeView?.cameraSettings = settings
             }
-        } else {
-            if (!isPaused) barcodeView!!.resume()
+            else
+            {
+                val settings = barcodeView?.cameraSettings
+                settings?.requestedCameraId = CameraInfo.CAMERA_FACING_BACK
+                barcodeView?.cameraSettings = settings
+            }
+        }
+        else
+        {
+            if (isPaused) barcodeView!!.resume()
         }
         return barcodeView
     }
@@ -213,7 +225,7 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
                 allowedBarcodeTypes.add(BarcodeFormat.values()[it])
             }
         } catch (e: java.lang.Exception) {
-            result.error(null, null, null)
+            result.error("1", e.message, null)
         }
 
         barcodeView?.decodeContinuous(
@@ -244,7 +256,8 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
                     "hasBackCamera" to hasBackCamera(), "hasFlash" to hasFlash(),
                     "activeCamera" to barcodeView?.cameraSettings?.requestedCameraId))
         } catch (e: Exception) {
-            result.error(null, null, null)
+
+            result.error("1", e.message, null)
         }
     }
 
@@ -263,7 +276,7 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
         val settings = barcodeView!!.cameraSettings
         settings.isScanInverted = isInvert
         barcodeView!!.cameraSettings = settings
-        barcodeView!!.resume();
+        barcodeView!!.resume()
     }
 
     private fun setScanAreaSize(
@@ -279,7 +292,7 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
     }
 
     private fun convertDpToPixels(dp: Double) =
-        (dp * context.resources.displayMetrics.density).toInt()
+        (dp * (context?.resources?.displayMetrics?.density?.toDouble() ?: 1.0)).toInt()
 
     private fun hasCameraPermission(): Boolean {
         return permissionGranted ||
@@ -308,7 +321,7 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
     }
 
     override fun onRequestPermissionsResult( requestCode: Int,
-                                             permissions: Array<out String>?,
+                                             permissions: Array<out String>,
                                              grantResults: IntArray): Boolean {
         if(requestCode == Shared.CAMERA_REQUEST_ID + this.id) {
             return if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -325,4 +338,3 @@ class QRView(private val context: Context, messenger: BinaryMessenger, private v
     }
 
 }
-
