@@ -79,6 +79,7 @@ class QRView(private val context: Context?, messenger: BinaryMessenger, private 
             "pauseCamera" -> pauseCamera(result)
             // Stopping camera is the same as pausing camera
             "stopCamera" -> pauseCamera(result)
+            "killCamera" -> stopCamera(result) // TODO: Check if perhaps we can call stopCamera in the above stopCamera call.method safely
             "resumeCamera" -> resumeCamera(result)
             "requestPermissions" -> checkAndRequestPermission(result)
             "getCameraInfo" -> getCameraInfo(result)
@@ -152,6 +153,14 @@ class QRView(private val context: Context?, messenger: BinaryMessenger, private 
             }
             result.success(true)
         }
+    }
+
+    private fun stopCamera(result: MethodChannel.Result)
+    {
+        val bl = barcodeView?: return result.success(false)
+        val cam = bl.cameraInstance
+        cam.close()
+        result.success(true)
     }
 
     private fun resumeCamera(result: MethodChannel.Result) {
