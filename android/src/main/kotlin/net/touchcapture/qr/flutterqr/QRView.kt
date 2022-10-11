@@ -78,7 +78,8 @@ class QRView(private val context: Context?, messenger: BinaryMessenger, private 
             "toggleFlash" -> toggleFlash(result)
             "pauseCamera" -> pauseCamera(result)
             // Stopping camera is the same as pausing camera
-            "stopCamera" -> stopCamera(result)
+            "stopCamera" -> pauseCamera(result)
+            "killCamera" -> stopCamera(result) // TODO: Check if perhaps we can call stopCamera in the above stopCamera call.method safely
             "resumeCamera" -> resumeCamera(result)
             "requestPermissions" -> checkAndRequestPermission(result)
             "getCameraInfo" -> getCameraInfo(result)
